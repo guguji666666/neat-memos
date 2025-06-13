@@ -8,7 +8,8 @@ export const ratingColor: Record<number, string> = {
 
 export const COLUMN_ACTIONS = {
   CREATE_CARD: "createCard",
-  DELETE: "delete"
+  DELETE: "delete",
+  EXPORT: "export"
 };
 
 export const CARD_ACTIONS = {
@@ -28,6 +29,12 @@ export const columnActions = [
     icon: "mdi-plus-box",
     text: "Create card",
     type: COLUMN_ACTIONS.CREATE_CARD,
+    color: "blue"
+  },
+  {
+    icon: "mdi-plus-box",
+    text: "Export",
+    type: COLUMN_ACTIONS.EXPORT,
     color: "blue"
   }
 ];

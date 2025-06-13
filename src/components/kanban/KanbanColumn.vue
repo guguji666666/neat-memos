@@ -30,10 +30,10 @@
               border
               elevation="0"
               density="compact"
-              class="py-0"
+              class="actions_list py-0"
             >
               <v-list-item
-                class="text-caption"
+                class="actions_list_item text-caption"
                 v-for="(item, i) in columnActions"
                 @click="handleColumnAction(item.type, props.column.id)"
                 :key="i"
@@ -84,10 +84,10 @@
             rounded="0"
             elevation="0"
             density="compact"
-            class="py-0"
+            class="actions_list py-0"
           >
             <v-list-item
-              class="text-caption"
+              class="actions_list_item text-caption"
               v-for="(item, i) in cardActions"
               @click="handleCardAction(item.type, card, props.column.id)"
               :key="i"
@@ -181,9 +181,19 @@ const handleColumnAction = async (action: string, columnId: number) => {
         }
       }
       break;
+
     case COLUMN_ACTIONS.CREATE_CARD:
       kanbanStore.kanbanCardDialog = true;
       kanbanStore.activeColumnId = columnId;
+      break;
+    case COLUMN_ACTIONS.EXPORT:
+      const project = kanbanStore.projects.find((p) => p.id === kanbanStore.selectedProject);
+      const column = project!.columns.find((c) => c.id === columnId);
+      let res = "";
+      for (const card of column!.cards) {
+        res += `${card.name} (${card.rating || 0}/5)\n`;
+      }
+      navigator.clipboard.writeText(res);
       break;
   }
 };
@@ -304,11 +314,19 @@ const handleCardAction = async (action: string, card: CardModel, columnId: numbe
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .kanban-column {
   width: 300px;
   flex-shrink: 0;
   box-sizing: border-box;
+}
+
+.actions_list {
+  min-width: 150px;
+
+  &_item {
+    min-height: 20px;
+  }
 }
 
 :deep(.v-list-item__content) {
