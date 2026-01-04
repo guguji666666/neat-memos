@@ -132,12 +132,14 @@ import KanbanProject from "@/components/kanban/KanbanProject.vue";
 import ProjectDialog from "@/components/projectDialog/ProjectDialog.vue";
 import { useConfirmationDialog } from "@/composables/useConfirmationDialog";
 import { useKanbanStore } from "@/store/kanban";
+import { useMemoStore } from "@/store/memos";
 import { useUserStore } from "@/store/user";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const kanbanStore = useKanbanStore();
 const userStore = useUserStore();
+const memoStore = useMemoStore();
 const route = useRoute();
 const createConfirmationDialog = useConfirmationDialog();
 
@@ -188,6 +190,7 @@ onMounted(async () => {
   loading.value = true;
   const userId = route.params.id as string;
   if (userId) {
+    await memoStore.loadTags(userId);
     await kanbanStore.loadProjects(userId);
   }
   loading.value = false;

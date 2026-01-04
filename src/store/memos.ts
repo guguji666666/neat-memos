@@ -61,17 +61,13 @@ export const useMemoStore = defineStore(
       }
     };
 
-    const loadTags = async () => {
-      if (!userStore.user) {
-        return;
-      }
-
+    const loadTags = async (userId: string) => {
       const now = new Date().getTime();
       const lastUpdatedAt = tagsUpdatedAt.value ?? 0;
       const difference = Math.abs(lastUpdatedAt - now) / 1000;
 
       if (difference > TAG_REFRESH_LIMIT) {
-        const data = await tagService.getTags(userStore.user.id);
+        const data = await tagService.getTags(userId);
         setTags(data);
         tagsUpdatedAt.value = new Date().getTime();
       }

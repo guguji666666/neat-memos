@@ -41,10 +41,12 @@ import ActiveFilters from "@/components/activeFilters/ActiveFilters.vue";
 import Memo from "@/components/memo/Memo.vue";
 import MemoEntry from "@/components/memoEntry/MemoEntry.vue";
 import { useMemoStore } from "@/store/memos";
+import { useUserStore } from "@/store/user";
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 const memoStore = useMemoStore();
+const userStore = useUserStore();
 const i18n = useI18n();
 
 const loading = ref(false);
@@ -52,7 +54,9 @@ const loading = ref(false);
 onMounted(async () => {
   loading.value = true;
   await memoStore.loadMemos();
-  await memoStore.loadTags();
+  if (userStore.isAuthenticated) {
+    await memoStore.loadTags(userStore.user!.id);
+  }
   loading.value = false;
 });
 </script>
