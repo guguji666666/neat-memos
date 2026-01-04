@@ -34,7 +34,7 @@
             >
               <v-list-item
                 class="text-caption"
-                v-for="(item, i) in columnActionsFiltered"
+                v-for="(item, i) in columnActions"
                 @click="handleColumnAction(item.type, props.column.id)"
                 :key="i"
               >
@@ -130,33 +130,17 @@ import { DropResult } from "@/models/common";
 import { CardModel, ColumnModel, MovePosition } from "@/models/kanban";
 import { useAppStore } from "@/store/app";
 import { useKanbanStore } from "@/store/kanban";
-import { useUserStore } from "@/store/user";
 import { useDebounceFn } from "@vueuse/core";
-import { computed } from "vue";
 import { Container, Draggable } from "vue3-smooth-dnd";
 import KanbanCard from "./KanbanCard.vue";
 
 const kanbanStore = useKanbanStore();
 const appStore = useAppStore();
-const userStore = useUserStore();
 const createConfirmationDialog = useConfirmationDialog();
 
 const props = defineProps<{
   column: ColumnModel;
 }>();
-
-const columnActionsFiltered = computed(() => {
-  const res = [...columnActions];
-
-  if (!userStore.isAuthenticated) {
-    const index = res.findIndex((a) => a.type === COLUMN_ACTIONS.DELETE);
-    if (index !== -1) {
-      res.splice(index, 1);
-    }
-  }
-
-  return res;
-});
 
 const getCardPayload = (projectId: number, columnId: number) => {
   return (index: number) => {

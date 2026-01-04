@@ -67,7 +67,6 @@
           </v-tooltip>
         </v-btn>
         <v-btn
-          v-if="userStore.isAuthenticated"
           :loading="kanbanStore.loading"
           :disabled="kanbanStore.interactionsDisabled"
           color="blue"
