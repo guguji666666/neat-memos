@@ -2,7 +2,7 @@
   <v-container>
     <mobile-drawer-controls hide-right />
     <div class="d-flex justify-space-between align-center">
-      <template v-if="kanbanStore.projects.length">
+      <template v-if="kanbanStore.filteredProjects.length">
         <v-tabs
           v-model="kanbanStore.selectedProject"
           align-tabs="center"
@@ -19,6 +19,7 @@
               {{ project.name }}
             </span>
             <v-btn
+              v-if="kanbanStore.isOwner"
               icon="mdi-close-circle"
               density="compact"
               color="grey"
@@ -36,17 +37,18 @@
       >
         No projects found.
       </span>
-      <div class="d-flex flex-gap">
+      <div class="d-flex flex-gap align-center">
         <v-text-field
           density="compact"
           placeholder="Search"
-          hide-details="auto"
+          hide-details
           clearable
           class="search-input"
           v-model="kanbanStore.searchText"
           :disabled="kanbanStore.loading"
         />
         <v-btn
+          v-if="userStore.isAuthenticated"
           :loading="kanbanStore.loading"
           :disabled="kanbanStore.interactionsDisabled"
           color="green"
@@ -65,6 +67,7 @@
           </v-tooltip>
         </v-btn>
         <v-btn
+          v-if="userStore.isAuthenticated"
           :loading="kanbanStore.loading"
           :disabled="kanbanStore.interactionsDisabled"
           color="blue"
@@ -82,6 +85,14 @@
             Add column
           </v-tooltip>
         </v-btn>
+        <v-checkbox
+          v-model="publicProject"
+          label="Public"
+          class="mr-3"
+          hide-details
+          color="orange"
+          :disabled="isPublicProjectCheckboxDisabled"
+        />
       </div>
     </div>
     <v-row v-if="loading">
@@ -121,11 +132,16 @@ import KanbanProject from "@/components/kanban/KanbanProject.vue";
 import ProjectDialog from "@/components/projectDialog/ProjectDialog.vue";
 import { useConfirmationDialog } from "@/composables/useConfirmationDialog";
 import { useKanbanStore } from "@/store/kanban";
-import { onMounted, ref } from "vue";
+import { useUserStore } from "@/store/user";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 
 const kanbanStore = useKanbanStore();
+const userStore = useUserStore();
+const route = useRoute();
 const createConfirmationDialog = useConfirmationDialog();
 
+const publicProject = ref(false);
 const loading = ref(false);
 
 const deleteProject = async (projectId: number) => {
@@ -136,9 +152,44 @@ const deleteProject = async (projectId: number) => {
   }
 };
 
+const isPublicProjectCheckboxDisabled = computed(() => {
+  return (
+    kanbanStore.interactionsDisabled ||
+    kanbanStore.selectedProject === null ||
+    !userStore.isAuthenticated ||
+    !kanbanStore.isOwner
+  );
+});
+
+watch(
+  () => kanbanStore.selectedProject,
+  async (newValue) => {
+    const project = kanbanStore.projects.find((p) => p.id === newValue);
+    if (project) {
+      publicProject.value = project.public;
+    }
+  },
+  {
+    deep: true
+  }
+);
+
+watch(
+  publicProject,
+  async (newValue) => {
+    kanbanStore.setProjectPublicStatus(kanbanStore.selectedProject!, newValue);
+  },
+  {
+    deep: true
+  }
+);
+
 onMounted(async () => {
   loading.value = true;
-  await kanbanStore.loadProjects();
+  const userId = route.params.id as string;
+  if (userId) {
+    await kanbanStore.loadProjects(userId);
+  }
   loading.value = false;
 });
 </script>

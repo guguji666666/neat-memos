@@ -33,6 +33,7 @@ export interface ProjectModel {
   name: string;
   userId: string;
   columns: ColumnModel[];
+  public: boolean;
 }
 
 export interface CreateColumnModel {

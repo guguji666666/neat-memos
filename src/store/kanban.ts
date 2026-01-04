@@ -21,17 +21,16 @@ export const useKanbanStore = defineStore("kanban", () => {
   const projects = ref<ProjectModel[]>([]);
   const selectedProject = ref<number | null>(null);
   const searchText = ref<string | null>(null);
+  const kanbanUserId = ref<string | null>(null);
 
   const kanbanService = new KanbanService();
 
   const userStore = useUserStore();
 
-  const loadProjects = async () => {
-    if (!userStore.user) {
-      return;
-    }
+  const loadProjects = async (userId: string) => {
     loading.value = true;
-    const data = await kanbanService.getProjects(userStore.user.id);
+    kanbanUserId.value = userId;
+    const data = await kanbanService.getProjects(userId);
     projects.value = data.map((p) => {
       p.columns.sort((a, b) => a.position - b.position);
       p.columns.forEach((c) => {
@@ -59,7 +58,8 @@ export const useKanbanStore = defineStore("kanban", () => {
       id,
       columns: [],
       name,
-      userId: userStore.user.id
+      userId: userStore.user.id,
+      public: false
     });
     loading.value = false;
   };
@@ -154,6 +154,12 @@ export const useKanbanStore = defineStore("kanban", () => {
     loading.value = false;
   };
 
+  const setProjectPublicStatus = async (projectId: number, isPublic: boolean) => {
+    loading.value = true;
+    await kanbanService.setProjectPublicStatus(projectId, isPublic);
+    loading.value = false;
+  };
+
   const markAsUrgent = async (card: CardModel) => {
     loading.value = true;
     await kanbanService.markAsUrgent(card.id, card.urgent);
@@ -178,11 +184,21 @@ export const useKanbanStore = defineStore("kanban", () => {
     return (searchText.value !== "" && searchText.value !== null) || loading.value;
   });
 
-  const filteredProjects = computed(() => {
-    if (searchText.value !== "" && searchText.value !== null) {
-      const result: ProjectModel[] = [];
+  const isOwner = computed(() => {
+    return kanbanUserId.value === userStore.user?.id;
+  });
 
-      projects.value.forEach((project) => {
+  const filteredProjects = computed(() => {
+    let data = [...projects.value];
+
+    if (!isOwner.value) {
+      data = data.filter((project) => project.public);
+    }
+
+    const res: ProjectModel[] = [];
+
+    if (searchText.value !== "" && searchText.value !== null) {
+      data.forEach((project) => {
         const filteredProject = { ...project };
         filteredProject.columns = filteredProject.columns.filter((column) =>
           column.cards.some(
@@ -193,13 +209,12 @@ export const useKanbanStore = defineStore("kanban", () => {
               )
           )
         );
-        result.push(filteredProject);
+        res.push(filteredProject);
       });
-
-      return result;
-    } else {
-      return projects.value;
+      return res;
     }
+
+    return data;
   });
 
   return {
@@ -214,6 +229,8 @@ export const useKanbanStore = defineStore("kanban", () => {
     searchText,
     filteredProjects,
     interactionsDisabled,
+    isOwner,
+    setProjectPublicStatus,
     removeRating,
     markAsUrgent,
     addRating,

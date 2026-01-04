@@ -49,7 +49,13 @@
           {{ label.content }}
         </v-chip>
       </v-card-title>
-      <v-card-text class="pt-1 pb-0">
+      <v-card-text
+        class="pb-0"
+        :class="{
+          'pt-1': props.data.tags.length,
+          'pt-2': !props.data.tags.length
+        }"
+      >
         {{ props.data.name }}
       </v-card-text>
       <div

@@ -46,6 +46,16 @@ export class KanbanService implements IKanbanService {
     if (error) throw error;
   }
 
+  async setProjectPublicStatus(projectId: number, isPublic: boolean): Promise<void> {
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        public: isPublic
+      })
+      .eq("id", projectId);
+    if (error) throw error;
+  }
+
   async editCard(data: EditCardModel): Promise<void> {
     const { error } = await supabase
       .from("cards")
@@ -234,6 +244,7 @@ export class KanbanService implements IKanbanService {
         createdAt,
         userId,
         name,
+        public,
         columns (
           id,
           name,
@@ -275,6 +286,7 @@ export class KanbanService implements IKanbanService {
         createdAt,
         userId,
         name,
+        public,
         columns (
           id,
           name,

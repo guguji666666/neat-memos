@@ -87,12 +87,11 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: "kanban",
+        path: "kanban/:id",
         name: ROUTE_NAMES.KANBAN,
         component: () => import("../views/Kanban.vue"),
         meta: {
-          title: "kanban.title",
-          auth: true
+          title: "kanban.title"
         }
       },
       {

@@ -237,30 +237,13 @@
                 </v-menu>
               </v-btn>
               <v-btn
+                v-if="coverColor !== null && coverColor !== '#ffffff'"
                 color="orange"
                 variant="text"
+                class="ml-2"
                 density="compact"
                 icon="mdi-close-circle"
-                class="ml-2 mr-1"
                 @click="clearCover"
-              />
-            </div>
-            <div class="d-flex items-center align-center">
-              <v-btn
-                size="small"
-                color="blue"
-                rounded="8"
-                variant="tonal"
-                class="flex-grow-1"
-                text="Cover image"
-                @click="openCoverFileDialog"
-              />
-              <v-btn
-                color="blue"
-                variant="text"
-                density="compact"
-                icon="mdi-close-circle"
-                class="ml-2 mr-1"
               />
             </div>
             <v-btn
@@ -327,7 +310,6 @@
 <script lang="ts" setup>
 import { useNotifications } from "@/composables/useNotifications";
 import { colorSwatches, ratingColor } from "@/constants/kanban";
-import { fileToBase64DataUrl } from "@/helpers/file";
 import { textEllipsis } from "@/helpers/string";
 import { IForm } from "@/models/common";
 import { TagModel } from "@/models/tag";
@@ -362,10 +344,6 @@ const attachments = ref<File[]>([]);
 const isNewCard = computed(() => !kanbanStore.activeCard);
 
 const { open: openAttachmentDialog, onChange: onAttachmentChange } = useFileDialog();
-
-const { open: openCoverFileDialog, onChange: onCoverFileDialogChange } = useFileDialog({
-  accept: "image/*"
-});
 
 const close = () => {
   kanbanStore.kanbanCardDialog = false;
@@ -504,13 +482,6 @@ const updateCoverColor = async (value: string | null) => {
     await save();
   }
 };
-
-onCoverFileDialogChange(async (files: FileList | null) => {
-  if (isNewCard) {
-    const imgUrl = await fileToBase64DataUrl(files![0]);
-    coverUrl.value = imgUrl;
-  }
-});
 
 onAttachmentChange(async (files: FileList | null) => {
   if (isNewCard) {

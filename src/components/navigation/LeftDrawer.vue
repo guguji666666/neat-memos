@@ -105,7 +105,8 @@ const navItems = computed(() => [
     title: "Kanban",
     icon: "mdi-view-dashboard",
     to: {
-      name: ROUTE_NAMES.KANBAN
+      name: ROUTE_NAMES.KANBAN,
+      params: { id: userStore.user?.id || "NaN" }
     }
   },
   {

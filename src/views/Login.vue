@@ -151,6 +151,7 @@ const login = async () => {
     router.push({
       name: ROUTE_NAMES.HOME
     });
+    resetForm();
     alert({
       text: i18n.t("welcome")
     });
@@ -160,7 +161,6 @@ const login = async () => {
       type: "error"
     });
   } finally {
-    resetForm();
     appStore.setLoading(false);
   }
 };
