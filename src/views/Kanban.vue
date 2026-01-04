@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <mobile-drawer-controls hide-right />
-    <div class="d-flex justify-space-between align-center">
+    <div class="d-flex justify-space-between align-center flex-wrap">
       <template v-if="kanbanStore.filteredProjects.length">
         <v-tabs
           v-model="kanbanStore.selectedProject"
@@ -37,7 +37,7 @@
       >
         No projects found.
       </span>
-      <div class="d-flex flex-gap align-center">
+      <div class="d-flex flex-gap align-center flex-wrap mt-5 mt-md-0">
         <v-text-field
           density="compact"
           placeholder="Search"
