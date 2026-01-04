@@ -8,6 +8,7 @@ import {
   MovePosition,
   ProjectModel
 } from "@/models/kanban";
+import { TagModel } from "@/models/tag";
 import { IKanbanService } from "../interfaces/kanban";
 
 export class KanbanService implements IKanbanService {
@@ -24,6 +25,27 @@ export class KanbanService implements IKanbanService {
       })
       .eq("id", cardId);
     if (error) throw error;
+  }
+
+  async getCardTags(cardId: number): Promise<TagModel[]> {
+    const { data, error } = await supabase
+      .from("cards")
+      .select(
+        `
+          id,
+          tags (
+            id,
+            content,
+            color
+          )
+        `
+      )
+      .eq("id", cardId);
+
+    if (error) throw error;
+    if (!data) return [];
+
+    return data[0].tags;
   }
 
   async removeRating(cardId: number): Promise<void> {

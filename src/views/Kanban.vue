@@ -130,10 +130,13 @@ import KanbanCardDialog from "@/components/kanban/KanbanCardDialog.vue";
 import KanbanProject from "@/components/kanban/KanbanProject.vue";
 import ProjectDialog from "@/components/projectDialog/ProjectDialog.vue";
 import { useConfirmationDialog } from "@/composables/useConfirmationDialog";
+import supabase from "@/helpers/supabase";
+import { CardModel } from "@/models/kanban";
+import { TagModel } from "@/models/tag";
 import { useKanbanStore } from "@/store/kanban";
 import { useMemoStore } from "@/store/memos";
 import { useUserStore } from "@/store/user";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const kanbanStore = useKanbanStore();
@@ -162,6 +165,28 @@ const isPublicProjectCheckboxDisabled = computed(() => {
   );
 });
 
+const cards = supabase
+  .channel("custom-all-channel")
+  .on("postgres_changes", { event: "*", schema: "public", table: "cards" }, async (payload) => {
+    switch (payload.eventType) {
+      case "INSERT": {
+        const data = { ...payload.new, tags: [] as TagModel[] };
+        await kanbanStore.addCardRealtime(data as CardModel);
+        break;
+      }
+      case "UPDATE": {
+        const data = { ...payload.new, tags: [] as TagModel[] };
+        await kanbanStore.updateCardRealtime(data as CardModel);
+        break;
+      }
+      case "DELETE": {
+        await kanbanStore.deleteCardRealtime(payload.old.id);
+        break;
+      }
+    }
+  })
+  .subscribe();
+
 watch(
   () => kanbanStore.selectedProject,
   async (newValue) => {
@@ -184,6 +209,10 @@ watch(
     deep: true
   }
 );
+
+onUnmounted(() => {
+  supabase.removeChannel(cards);
+});
 
 onMounted(async () => {
   loading.value = true;

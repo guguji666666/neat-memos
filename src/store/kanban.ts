@@ -7,6 +7,7 @@ import {
   MovePosition,
   ProjectModel
 } from "@/models/kanban";
+import { TagModel } from "@/models/tag";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useUserStore } from "./user";
@@ -180,6 +181,86 @@ export const useKanbanStore = defineStore("kanban", () => {
     loading.value = false;
   };
 
+  const addCardRealtime = async (card: CardModel) => {
+    const column = projects.value
+      .find((p) => p.columns.some((c) => c.id === card.columnId))
+      ?.columns.find((c) => c.id === card.columnId);
+
+    if (!column) return;
+
+    let tags: TagModel[] = [];
+
+    try {
+      tags = await kanbanService.getCardTags(card.id);
+    } catch {
+      tags = [];
+    }
+
+    column.cards.push({
+      ...card,
+      tags,
+      menuOpen: false
+    });
+
+    column.cards.sort((a, b) => a.position - b.position);
+  };
+
+  const updateCardRealtime = async (card: CardModel) => {
+    const sourceProject = projects.value.find((p) =>
+      p.columns.some((c) => c.cards.some((x) => x.id === card.id))
+    );
+    const sourceColumn = sourceProject?.columns.find((c) => c.cards.some((x) => x.id === card.id));
+    const existingCard = sourceColumn?.cards.find((c) => c.id === card.id);
+
+    const preservedMenu = existingCard?.menuOpen ?? false;
+
+    if (sourceColumn && sourceColumn.id !== card.columnId) {
+      sourceColumn.cards = sourceColumn.cards.filter((c) => c.id !== card.id);
+    }
+
+    const targetColumn = projects.value
+      .find((p) => p.columns.some((c) => c.id === card.columnId))
+      ?.columns.find((c) => c.id === card.columnId);
+
+    if (!targetColumn) return;
+
+    const tags = await kanbanService.getCardTags(card.id);
+
+    const hydratedCard: CardModel = {
+      ...existingCard,
+      ...card,
+      tags,
+      menuOpen: preservedMenu
+    };
+
+    const existingInTarget = targetColumn.cards.find((c) => c.id === card.id);
+
+    if (existingInTarget) {
+      Object.assign(existingInTarget, hydratedCard);
+    } else {
+      targetColumn.cards.push(hydratedCard);
+    }
+
+    targetColumn.cards.sort((a, b) => a.position - b.position);
+  };
+
+  const deleteCardRealtime = (id: number) => {
+    const project = projects.value.find((p) =>
+      p.columns.some((c) => c.cards.some((card) => card.id === id))
+    );
+
+    const column = project?.columns.find((c) => c.cards.some((card) => card.id === id));
+
+    if (!column) return;
+
+    column.cards = column.cards
+      .filter((c) => c.id !== id)
+      .map((c, i) => ({
+        ...c,
+        position: i
+      }));
+  };
+
   const interactionsDisabled = computed(() => {
     return (searchText.value !== "" && searchText.value !== null) || loading.value;
   });
@@ -230,6 +311,9 @@ export const useKanbanStore = defineStore("kanban", () => {
     filteredProjects,
     interactionsDisabled,
     isOwner,
+    updateCardRealtime,
+    deleteCardRealtime,
+    addCardRealtime,
     setProjectPublicStatus,
     removeRating,
     markAsUrgent,

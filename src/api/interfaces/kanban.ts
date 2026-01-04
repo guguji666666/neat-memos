@@ -7,6 +7,7 @@ import {
   MovePosition,
   ProjectModel
 } from "@/models/kanban";
+import { TagModel } from "@/models/tag";
 
 export interface IKanbanService {
   // Projects
@@ -20,6 +21,7 @@ export interface IKanbanService {
   deleteColumn(columnId: number, positions: MovePosition[]): Promise<void>;
   changeColumnName(columnId: number, name: string): Promise<void>;
   // Cards
+  getCardTags(cardId: number): Promise<TagModel[]>;
   moveCardToColumn(data: MoveCardToColumnModel): Promise<void>;
   rearrangeCardsInColumn(data: MovePosition[]): Promise<void>;
   createCard(data: CreateCardModel): Promise<number>;
