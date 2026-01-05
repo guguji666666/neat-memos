@@ -2,7 +2,7 @@ import { MemoService } from "@/api/services/memos";
 import { ResourcesService } from "@/api/services/resources";
 import { TagService } from "@/api/services/tag";
 import { useNotifications } from "@/composables/useNotifications";
-import { MEMO_FILTERS, MEMO_REFRESH_LIMIT, TAG_REFRESH_LIMIT } from "@/constants/memo";
+import { MEMO_FILTERS, MEMO_REFRESH_LIMIT } from "@/constants/memo";
 import i18n from "@/i18n";
 import { MemoModel } from "@/models/memo";
 import { ResourceFile } from "@/models/resources";
@@ -62,15 +62,8 @@ export const useMemoStore = defineStore(
     };
 
     const loadTags = async (userId: string) => {
-      const now = new Date().getTime();
-      const lastUpdatedAt = tagsUpdatedAt.value ?? 0;
-      const difference = Math.abs(lastUpdatedAt - now) / 1000;
-
-      if (difference > TAG_REFRESH_LIMIT) {
-        const data = await tagService.getTags(userId);
-        setTags(data);
-        tagsUpdatedAt.value = new Date().getTime();
-      }
+      const data = await tagService.getTags(userId);
+      setTags(data);
     };
 
     const saveTag = async (content: string, color: string) => {
