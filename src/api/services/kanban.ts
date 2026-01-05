@@ -1,3 +1,4 @@
+import { realtimeClientId } from "@/helpers/misc";
 import supabase from "@/helpers/supabase";
 import {
   CreateCardModel,
@@ -21,7 +22,8 @@ export class KanbanService implements IKanbanService {
     const { error } = await supabase
       .from("cards")
       .update({
-        rating: 1
+        rating: 1,
+        client_id: realtimeClientId
       })
       .eq("id", cardId);
     if (error) throw error;
@@ -52,7 +54,8 @@ export class KanbanService implements IKanbanService {
     const { error } = await supabase
       .from("cards")
       .update({
-        rating: null
+        rating: null,
+        client_id: realtimeClientId
       })
       .eq("id", cardId);
     if (error) throw error;
@@ -62,7 +65,8 @@ export class KanbanService implements IKanbanService {
     const { error } = await supabase
       .from("cards")
       .update({
-        urgent: !status
+        urgent: !status,
+        client_id: realtimeClientId
       })
       .eq("id", cardId);
     if (error) throw error;
@@ -86,7 +90,8 @@ export class KanbanService implements IKanbanService {
         name: data.name,
         coverColor: data.coverColor,
         coverUrl: data.coverUrl,
-        rating: data.rating
+        rating: data.rating,
+        client_id: realtimeClientId
       })
       .eq("id", data.id);
     if (error) throw error;
@@ -125,7 +130,8 @@ export class KanbanService implements IKanbanService {
     const { error } = await supabase.from("cards").upsert(
       positions.map((d) => ({
         position: d.newPosition,
-        id: d.id
+        id: d.id,
+        client_id: realtimeClientId
       }))
     );
 
@@ -143,7 +149,8 @@ export class KanbanService implements IKanbanService {
           description: data.description,
           name: data.name,
           position: data.position,
-          rating: data.rating
+          rating: data.rating,
+          client_id: realtimeClientId
         }
       ])
       .select();
@@ -196,7 +203,8 @@ export class KanbanService implements IKanbanService {
     const { error } = await supabase.from("cards").upsert(
       data.map((d) => ({
         position: d.newPosition,
-        id: d.id
+        id: d.id,
+        client_id: realtimeClientId
       }))
     );
     if (error) throw error;
@@ -207,7 +215,8 @@ export class KanbanService implements IKanbanService {
       .from("cards")
       .update([
         {
-          columnId: data.newColumnId
+          columnId: data.newColumnId,
+          client_id: realtimeClientId
         }
       ])
       .eq("id", data.cardId);
@@ -217,7 +226,8 @@ export class KanbanService implements IKanbanService {
     const { error: cardRearrangeError } = await supabase.from("cards").upsert(
       data.positions.map((d) => ({
         position: d.newPosition,
-        id: d.id
+        id: d.id,
+        client_id: realtimeClientId
       }))
     );
 

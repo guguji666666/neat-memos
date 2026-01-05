@@ -20,3 +20,11 @@ export const generateRandomString = (n: number): string => {
   while (n--) res += sample(characters.split(""));
   return res;
 };
+
+export const realtimeClientId =
+  sessionStorage.getItem("realtime_client_id") ??
+  (() => {
+    const id = crypto.randomUUID();
+    sessionStorage.setItem("realtime_client_id", id);
+    return id;
+  })();

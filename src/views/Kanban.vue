@@ -130,6 +130,7 @@ import KanbanCardDialog from "@/components/kanban/KanbanCardDialog.vue";
 import KanbanProject from "@/components/kanban/KanbanProject.vue";
 import ProjectDialog from "@/components/projectDialog/ProjectDialog.vue";
 import { useConfirmationDialog } from "@/composables/useConfirmationDialog";
+import { realtimeClientId } from "@/helpers/misc";
 import supabase from "@/helpers/supabase";
 import { CardModel } from "@/models/kanban";
 import { TagModel } from "@/models/tag";
@@ -168,15 +169,26 @@ const isPublicProjectCheckboxDisabled = computed(() => {
 const cards = supabase
   .channel("custom-all-channel")
   .on("postgres_changes", { event: "*", schema: "public", table: "cards" }, async (payload) => {
+    console.log(payload);
     switch (payload.eventType) {
       case "INSERT": {
+        if (payload.new.client_id === realtimeClientId) {
+          return;
+        }
+
         const data = { ...payload.new, tags: [] as TagModel[] };
         await kanbanStore.addCardRealtime(data as CardModel);
+
         break;
       }
       case "UPDATE": {
+        if (payload.new.client_id === realtimeClientId) {
+          return;
+        }
+
         const data = { ...payload.new, tags: [] as TagModel[] };
         await kanbanStore.updateCardRealtime(data as CardModel);
+
         break;
       }
       case "DELETE": {
