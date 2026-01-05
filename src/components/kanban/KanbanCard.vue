@@ -60,10 +60,11 @@
       </v-card-text>
       <div
         v-if="props.data.rating"
-        class="pl-4"
+        class="pl-4 mb-n2"
       >
         <v-rating
           half-increments
+          hide-details
           disabled
           :model-value="props.data.rating"
           :length="5"
